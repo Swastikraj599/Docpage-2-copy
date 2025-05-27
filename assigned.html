@@ -315,35 +315,82 @@
 
     function previewDocument(id) {
       const doc = formDataList.find(d => d.id === id);
-      if (!doc) {
-        Swal.fire('Error', 'Document not found', 'error');
+      if (!doc || !doc.fileData) {
+        Swal.fire('Error', 'Document preview not available', 'error');
         return;
       }
 
-      const modal = document.createElement('div');
-      modal.className = 'preview-modal';
-      
-      let content = '';
-      if (doc.fileData) {
-        if (doc.fileType.startsWith('image/')) {
-          content = `<img src="${doc.fileData}" style="max-width: 100%; max-height: 80vh;">`;
-        } else if (doc.fileType === 'application/pdf') {
-          content = `<embed src="${doc.fileData}" type="application/pdf" width="100%" height="80vh">`;
-        } else {
-          content = `<iframe src="${doc.fileData}" style="width: 100%; height: 80vh; border: none;"></iframe>`;
-        }
+      // Create a blob from the base64 data
+      const byteString = atob(doc.fileData.split(',')[1]);
+      const mimeString = doc.fileData.split(',')[0].split(':')[1].split(';')[0];
+      const ab = new ArrayBuffer(byteString.length);
+      const ia = new Uint8Array(ab);
+      for (let i = 0; i < byteString.length; i++) {
+        ia[i] = byteString.charCodeAt(i);
+      }
+      const blob = new Blob([ab], { type: mimeString });
+      const blobUrl = URL.createObjectURL(blob);
+
+      // Show preview based on file type
+      let previewHtml = '';
+      if (mimeString.startsWith('image/')) {
+        previewHtml = `<img src="${blobUrl}" style="max-width: 100%; max-height: 80vh;">`;
+      } else if (mimeString === 'application/pdf') {
+        previewHtml = `<embed src="${blobUrl}" type="application/pdf" width="100%" height="80vh">`;
       } else {
-        content = '<p>No preview available</p>';
+        previewHtml = `
+          <div style="text-align: center; padding: 20px;">
+            <p>Preview not available for this file type</p>
+            <a href="${blobUrl}" download="${doc.fileName}" class="action-btn preview-btn" style="display: inline-block; margin-top: 10px;">
+              <i class="fas fa-download"></i> Download File
+            </a>
+          </div>
+        `;
       }
 
-      modal.innerHTML = `
-        <button class="preview-close" onclick="this.parentElement.remove()">&times;</button>
-        <div class="preview-content">
-          ${content}
-        </div>
-      `;
+      Swal.fire({
+        html: previewHtml,
+        width: '80%',
+        showCloseButton: true,
+        showConfirmButton: false,
+        customClass: {
+          container: 'preview-container'
+        }
+      });
+    }
 
-      document.body.appendChild(modal);
+    async function shareDocument(id) {
+      const doc = formDataList.find(d => d.id === id);
+      if (!doc) return;
+
+      const shareData = {
+        title: doc.docName,
+        text: `Check out this document: ${doc.docName}\nCategory: ${doc.category}\nAuthor: ${doc.author}`,
+        url: window.location.href
+      };
+
+      if (navigator.share && navigator.canShare(shareData)) {
+        try {
+          await navigator.share(shareData);
+        } catch (err) {
+          showShareMenu(event, id);
+        }
+      } else {
+        showShareMenu(event, id);
+      }
+    }
+
+    function shareViaEmail(id) {
+      const doc = formDataList.find(d => d.id === id);
+      const subject = encodeURIComponent(`Shared Document: ${doc.docName}`);
+      const body = encodeURIComponent(`Check out this document:\n\nName: ${doc.docName}\nCategory: ${doc.category}\nAuthor: ${doc.author}\nDate: ${doc.date}`);
+      window.open(`mailto:?subject=${subject}&body=${body}`);
+    }
+
+    function shareViaWhatsApp(id) {
+      const doc = formDataList.find(d => d.id === id);
+      const text = encodeURIComponent(`Check out this document:\n\nName: ${doc.docName}\nCategory: ${doc.category}\nAuthor: ${doc.author}\nDate: ${doc.date}`);
+      window.open(`https://wa.me/?text=${text}`);
     }
 
     function showShareMenu(event, id) {
@@ -383,19 +430,6 @@
           document.removeEventListener('click', closeMenu);
         }
       });
-    }
-
-    function shareViaEmail(id) {
-      const doc = formDataList.find(d => d.id === id);
-      const subject = encodeURIComponent(`Shared Document: ${doc.docName}`);
-      const body = encodeURIComponent(`Check out this document: ${doc.docName}\n\nDetails:\nCategory: ${doc.category}\nAuthor: ${doc.author}\nDate: ${doc.date}`);
-      window.location.href = `mailto:?subject=${subject}&body=${body}`;
-    }
-
-    function shareViaWhatsApp(id) {
-      const doc = formDataList.find(d => d.id === id);
-      const text = encodeURIComponent(`Check out this document: ${doc.docName}\nCategory: ${doc.category}\nAuthor: ${doc.author}`);
-      window.open(`https://wa.me/?text=${text}`, '_blank');
     }
 
     function copyShareLink(id) {
