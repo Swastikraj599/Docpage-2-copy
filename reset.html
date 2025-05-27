@@ -1,0 +1,150 @@
+<!--<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <title>Reset Password</title>
+    <link href="style.css" rel="stylesheet" />
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/animate.css@4.1.1/animate.min.css">
+</head>
+<body>
+    <div class="container">
+        <form id="reset-form">
+            <h3>Reset Password</h3>
+
+            <label for="email">Enter your email
+                <input type="email" id="email" placeholder="Email" required />
+            </label>
+
+            <button type="submit">Send Reset Link</button>
+            <p><a href="index.html">Back to Login</a></p>
+        </form>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.7.3/firebase-app.js";
+        import { getAuth, sendPasswordResetEmail } from "https://www.gstatic.com/firebasejs/11.7.3/firebase-auth.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyD1HpQF9FbWKsnZzYT8jpIoZXtTS8y72D8",
+            authDomain: "login-example-2ee43.firebaseapp.com",
+            projectId: "login-example-2ee43",
+            storageBucket: "login-example-2ee43.appspot.com",
+            messagingSenderId: "185903382168",
+            appId: "1:185903382168:web:5ae3e9ff7f4232b161daed"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+
+        const form = document.getElementById('reset-form');
+        form.addEventListener('submit', (e) => {
+            e.preventDefault();
+
+            const email = document.getElementById('email').value;
+            sendPasswordResetEmail(auth, email)
+                .then(() => {
+                    alert("Password reset email sent!");
+                    window.location.href = "index.html";  // Redirect to login page after success
+                })
+                .catch((error) => {
+                    alert(error.message);
+                });
+        });
+    </script>
+    <!-- Custom Modal Dialog -->
+<!--<div id="custom-modal" class="modal hidden">
+  <div class="modal-content">
+    <span class="close-button" id="modal-close">&times;</span>
+    <p id="modal-message">This is a message</p>
+  </div>
+</div>
+</body>
+</html>-->
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Reset Password</title>
+  <link href="style.css" rel="stylesheet" />
+
+  <!-- SweetAlert2 and Animate.css -->
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/animate.css@4.1.1/animate.min.css" />
+</head>
+<body>
+  <div class="container">
+    <form id="reset-form">
+      <h3>Reset Password</h3>
+
+      <label for="email">Enter your email
+        <input type="email" id="email" placeholder="Email" required />
+      </label>
+
+      <button type="submit">Send Reset Link</button>
+      <p><a href="index.html">Back to Login</a></p>
+    </form>
+  </div>
+
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.7.3/firebase-app.js";
+    import { getAuth, sendPasswordResetEmail } from "https://www.gstatic.com/firebasejs/11.7.3/firebase-auth.js";
+
+    // ✅ Firebase Configuration
+    const firebaseConfig = {
+      apiKey: "AIzaSyD1HpQF9FbWKsnZzYT8jpIoZXtTS8y72D8",
+      authDomain: "login-example-2ee43.firebaseapp.com",
+      projectId: "login-example-2ee43",
+      storageBucket: "login-example-2ee43.appspot.com",
+      messagingSenderId: "185903382168",
+      appId: "1:185903382168:web:5ae3e9ff7f4232b161daed"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+
+    const form = document.getElementById('reset-form');
+    form.addEventListener('submit', (e) => {
+      e.preventDefault();
+
+      const email = document.getElementById('email').value;
+
+      sendPasswordResetEmail(auth, email)
+        .then(() => {
+          // ✅ SweetAlert2 dialog on success
+          Swal.fire({
+            icon: 'success',
+            title: 'OTP Sent!',
+            text: `A reset link has been sent to ${email}.`,
+            confirmButtonColor: '#4CAF50',
+            showClass: {
+              popup: 'animate__animated animate__zoomIn'
+            },
+            hideClass: {
+              popup: 'animate__animated animate__fadeOutUp'
+            }
+          }).then(() => {
+            window.location.href = "index.html";
+          });
+        })
+        .catch((error) => {
+          // ❌ SweetAlert2 dialog on error
+          Swal.fire({
+            icon: 'error',
+            title: 'Error Sending Reset Link',
+            text: error.message,
+            confirmButtonColor: '#d33',
+            showClass: {
+              popup: 'animate__animated animate__shakeX'
+            },
+            hideClass: {
+              popup: 'animate__animated animate__fadeOut'
+            }
+          });
+        });
+    });
+  </script>
+</body>
+</html>
+

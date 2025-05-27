@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Sign Up</title>
+    <link href="style1.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;500;600&display=swap" rel="stylesheet">
+    <link href="style1.css" rel="stylesheet">
+    <!-- SweetAlert2 -->
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<!-- Animate.css -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/animate.css@4.1.1/animate.min.css">
+</head>
+<body>
+    <div class="background">
+        <div class="shape"></div>
+        <div class="shape"></div>
+    </div>
+
+    <form action="/signup" method="POST">
+        <h3>Create Account</h3>
+
+        <!--<label for="fullname">Full Name
+            <input type="text" id="fullname" placeholder="Your Full Name" required>
+        </label>-->
+
+        <label for="email">Email
+            <input type="email" id="email" placeholder="Your Email" required>
+        </label>
+
+        <!--<label for="phone">Phone Number
+            <input type="tel" id="phone" placeholder="Your Phone Number">
+        </label>-->
+
+        <label for="password">Password
+            <input type="password" id="password" placeholder="Create Password" required>
+        </label>
+
+        <!--<label for="confirm-password">Confirm Password
+            <input type="password" id="confirm-password" placeholder="Confirm Password" required>
+        </label>-->
+
+        <button id="submit">Sign Up</button>
+
+        <p class="signup-text">
+            Already have an account? <a href="index.html">Log In</a>
+        </p>
+    </form>
+    <script type="module" src="signup.js" defer></script>
+
+    <div id="toast-container"></div>
+</body>
+</html>

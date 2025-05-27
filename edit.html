@@ -1,0 +1,418 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Edit Document</title>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet"/>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Poppins', sans-serif;
+      background: linear-gradient(135deg, #1a1a1a 0%, #363636 100%);
+      color: white;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 50px 20px;
+    }
+
+    .container {
+      width: 100%;
+      max-width: 600px;
+      margin: 0 auto;
+    }
+
+    h2 {
+      text-align: center;
+      margin-bottom: 40px;
+      font-size: 2.5rem;
+      background: linear-gradient(45deg, #FFA726, #FF7043);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    form {
+      background: rgba(255, 255, 255, 0.05);
+      padding: 40px;
+      border-radius: 20px;
+      backdrop-filter: blur(10px);
+      box-shadow: 0 15px 35px rgba(0,0,0,0.2);
+      position: relative;
+    }
+
+    .form-group {
+      margin-bottom: 25px;
+    }
+
+    label {
+      display: block;
+      margin-bottom: 10px;
+      font-weight: 500;
+      color: #e0e0e0;
+    }
+
+    input[type="text"],
+    input[type="date"] {
+      width: 100%;
+      padding: 12px;
+      background: rgba(255, 255, 255, 0.1);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      border-radius: 8px;
+      color: white;
+      font-size: 1rem;
+      transition: all 0.3s ease;
+    }
+
+    input[type="file"] {
+      width: 100%;
+      padding: 10px;
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 8px;
+      color: white;
+      cursor: pointer;
+    }
+
+    input:focus {
+      outline: none;
+      border-color: #FFA726;
+      box-shadow: 0 0 0 2px rgba(255, 167, 38, 0.2);
+    }
+
+    .current-file {
+      background: rgba(255, 255, 255, 0.1);
+      padding: 15px;
+      border-radius: 8px;
+      margin-bottom: 15px;
+    }
+
+    .current-file p {
+      margin: 5px 0;
+      color: #e0e0e0;
+    }
+
+    .button-group {
+      display: flex;
+      gap: 15px;
+    }
+
+    button {
+      flex: 1;
+      padding: 15px;
+      border: none;
+      border-radius: 8px;
+      color: white;
+      font-size: 1.1rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+    }
+
+    .save-btn {
+      background: linear-gradient(45deg, #FFA726, #FF7043);
+    }
+
+    .cancel-btn {
+      background: rgba(255, 255, 255, 0.1);
+    }
+
+    button:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 10px 20px rgba(0,0,0,0.2);
+    }
+
+    .back-button {
+      position: fixed;
+      top: 20px;
+      left: 20px;
+      padding: 10px 20px;
+      background: rgba(255, 255, 255, 0.1);
+      border: none;
+      border-radius: 8px;
+      color: white;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+
+    .back-button:hover {
+      background: rgba(255, 255, 255, 0.2);
+    }
+
+    .edit-permission {
+      position: absolute;
+      top: 20px;
+      right: 20px;
+      background: rgba(255, 255, 255, 0.1);
+      padding: 10px;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .permission-toggle {
+      width: 50px;
+      height: 26px;
+      background: rgba(255, 255, 255, 0.2);
+      border-radius: 13px;
+      position: relative;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+
+    .permission-toggle.active {
+      background: #4CAF50;
+    }
+
+    .permission-toggle::after {
+      content: '';
+      position: absolute;
+      width: 20px;
+      height: 20px;
+      background: white;
+      border-radius: 50%;
+      top: 3px;
+      left: 3px;
+      transition: all 0.3s ease;
+    }
+
+    .permission-toggle.active::after {
+      left: 27px;
+    }
+
+    .dialog-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0, 0, 0, 0.7);
+      backdrop-filter: blur(5px);
+      display: none;
+      justify-content: center;
+      align-items: center;
+      z-index: 1000;
+    }
+
+    .dialog {
+      background: rgba(255, 255, 255, 0.1);
+      backdrop-filter: blur(10px);
+      padding: 30px;
+      border-radius: 15px;
+      width: 90%;
+      max-width: 400px;
+      text-align: center;
+    }
+
+    .dialog-title {
+      font-size: 1.5rem;
+      margin-bottom: 20px;
+      color: #fff;
+    }
+
+    .dialog-buttons {
+      display: flex;
+      gap: 15px;
+      justify-content: center;
+      margin-top: 25px;
+    }
+
+    .dialog-btn {
+      padding: 10px 25px;
+      border: none;
+      border-radius: 8px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+
+    .confirm-btn {
+      background: #4CAF50;
+      color: white;
+    }
+
+    .cancel-btn {
+      background: rgba(255, 255, 255, 0.2);
+      color: white;
+    }
+
+    @media (max-width: 768px) {
+      form {
+        padding: 20px;
+      }
+
+      h2 {
+        font-size: 2rem;
+      }
+
+      .button-group {
+        flex-direction: column;
+      }
+
+      .edit-permission {
+        position: relative;
+        top: 0;
+        right: 0;
+        margin-bottom: 20px;
+        justify-content: center;
+      }
+    }
+  </style>
+</head>
+<body>
+  <button class="back-button" onclick="window.location.href='table.html'">
+    <i class="fas fa-arrow-left"></i> Back
+  </button>
+
+  <div class="container">
+    <h2>Edit Document</h2>
+    <form id="editForm">
+      <div class="edit-permission">
+        <span>Edit Permission</span>
+        <div class="permission-toggle" id="permissionToggle"></div>
+      </div>
+
+      <div class="current-file">
+        <p><strong>Current File:</strong> <span id="currentFileName"></span></p>
+        <p><strong>Upload Date:</strong> <span id="uploadDate"></span></p>
+      </div>
+
+      <div class="form-group">
+        <label for="author">Author</label>
+        <input type="text" id="author" name="author" required />
+      </div>
+
+      <div class="form-group">
+        <label for="date">Date</label>
+        <input type="date" id="date" name="date" required />
+      </div>
+
+      <div class="form-group">
+        <label for="docName">Document Name</label>
+        <input type="text" id="docName" name="docName" required />
+      </div>
+
+      <div class="form-group" id="fileInputGroup" style="display: none;">
+        <label for="file">Change Document</label>
+        <input type="file" id="file" name="file" />
+      </div>
+
+      <div class="button-group">
+        <button type="submit" class="save-btn">
+          <i class="fas fa-save"></i> Save Changes
+        </button>
+        <button type="button" class="cancel-btn" onclick="window.location.href='table.html'">
+          <i class="fas fa-times"></i> Cancel
+        </button>
+      </div>
+    </form>
+  </div>
+
+  <div id="permissionDialog" class="dialog-overlay">
+    <div class="dialog">
+      <h3 class="dialog-title">Enable Editing?</h3>
+      <p>This will allow you to modify the document details and content.</p>
+      <div class="dialog-buttons">
+        <button class="dialog-btn cancel-btn" onclick="closePermissionDialog(false)">
+          <i class="fas fa-times"></i> Cancel
+        </button>
+        <button class="dialog-btn confirm-btn" onclick="closePermissionDialog(true)">
+          <i class="fas fa-check"></i> Enable
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const editIndex = localStorage.getItem('editIndex');
+    const dataList = JSON.parse(localStorage.getItem('formDataList')) || [];
+    const currentDoc = dataList[editIndex];
+    const permissionToggle = document.getElementById('permissionToggle');
+    const fileInputGroup = document.getElementById('fileInputGroup');
+    const permissionDialog = document.getElementById('permissionDialog');
+    let editingEnabled = false;
+
+    if (!currentDoc) {
+      window.location.href = 'table.html';
+    }
+
+    // Fill the form with existing data
+    document.getElementById('author').value = currentDoc.author;
+    document.getElementById('date').value = currentDoc.date;
+    document.getElementById('docName').value = currentDoc.docName;
+    document.getElementById('currentFileName').textContent = currentDoc.fileName;
+    document.getElementById('uploadDate').textContent = new Date(currentDoc.uploadDate).toLocaleString();
+
+    // Disable all inputs initially
+    document.querySelectorAll('input').forEach(input => {
+      input.disabled = true;
+    });
+
+    permissionToggle.addEventListener('click', () => {
+      permissionDialog.style.display = 'flex';
+    });
+
+    function closePermissionDialog(granted) {
+      permissionDialog.style.display = 'none';
+      if (granted) {
+        editingEnabled = true;
+        permissionToggle.classList.add('active');
+        document.querySelectorAll('input').forEach(input => {
+          input.disabled = false;
+        });
+        fileInputGroup.style.display = 'block';
+      }
+    }
+
+    document.getElementById('editForm').addEventListener('submit', async function(e) {
+      e.preventDefault();
+
+      if (!editingEnabled) {
+        alert('Please enable editing to make changes.');
+        return;
+      }
+
+      const file = document.getElementById('file').files[0];
+      let fileData = currentDoc.fileData;
+      let fileName = currentDoc.fileName;
+      let fileType = currentDoc.fileType;
+
+      if (file) {
+        fileData = await new Promise(resolve => {
+          const reader = new FileReader();
+          reader.onload = () => resolve(reader.result);
+          reader.readAsDataURL(file);
+        });
+        fileName = file.name;
+        fileType = file.type;
+      }
+
+      // Update the document data
+      dataList[editIndex] = {
+        ...currentDoc,
+        author: document.getElementById('author').value,
+        date: document.getElementById('date').value,
+        docName: document.getElementById('docName').value,
+        fileName,
+        fileType,
+        fileData,
+      };
+
+      localStorage.setItem('formDataList', JSON.stringify(dataList));
+      localStorage.removeItem('editIndex');
+
+      window.location.href = 'table.html';
+    });
+  </script>
+</body>
+</html>

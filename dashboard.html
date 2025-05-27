@@ -1,0 +1,377 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dashboard - Document Management System</title>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet"/>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+  <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Poppins', sans-serif;
+      background: #1a1a1a;
+      color: white;
+      min-height: 100vh;
+      display: flex;
+    }
+
+    .sidebar {
+      width: 250px;
+      background: rgba(255, 255, 255, 0.05);
+      backdrop-filter: blur(10px);
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      position: fixed;
+      height: 100vh;
+    }
+
+    .logo {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 20px;
+      font-weight: bold;
+      margin-bottom: 30px;
+      color: white;
+      text-decoration: none;
+    }
+
+    .logo i {
+      font-size: 24px;
+      background: linear-gradient(45deg, #4CAF50, #2196F3);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .nav-item {
+      padding: 12px 15px;
+      border-radius: 8px;
+      color: white;
+      text-decoration: none;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      transition: all 0.3s ease;
+    }
+
+    .nav-item:hover, .nav-item.active {
+      background: rgba(255, 255, 255, 0.1);
+    }
+
+    .nav-item i {
+      width: 20px;
+    }
+
+    .main-content {
+      margin-left: 250px;
+      padding: 20px;
+      width: calc(100% - 250px);
+    }
+
+    .header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 30px;
+      padding: 20px;
+      background: rgba(255, 255, 255, 0.05);
+      backdrop-filter: blur(10px);
+      border-radius: 12px;
+    }
+
+    .signout-btn {
+      padding: 10px 20px;
+      background: rgba(255, 255, 255, 0.1);
+      border: none;
+      border-radius: 8px;
+      color: white;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .signout-btn:hover {
+      background: rgba(255, 255, 255, 0.2);
+    }
+
+    .dashboard-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 20px;
+    }
+
+    .chart-container {
+      background: rgba(255, 255, 255, 0.05);
+      backdrop-filter: blur(10px);
+      border-radius: 12px;
+      padding: 20px;
+      height: 400px;
+    }
+
+    .calendar-container {
+      background: rgba(255, 255, 255, 0.05);
+      backdrop-filter: blur(10px);
+      border-radius: 12px;
+      padding: 20px;
+    }
+
+    .flatpickr-calendar {
+      background: rgba(255, 255, 255, 0.1) !important;
+      border: none !important;
+      box-shadow: 0 10px 20px rgba(0,0,0,0.2) !important;
+    }
+
+    .flatpickr-day {
+      color: white !important;
+    }
+
+    #calendar .flatpickr-day {
+  position: relative;
+  cursor: pointer;
+  padding-bottom: 18px; /* make space for dots */
+}
+
+#calendar .flatpickr-day div {
+  pointer-events: none; /* dots won't interfere with clicking */
+}
+
+
+    @media (max-width: 768px) {
+      .sidebar {
+        width: 60px;
+        padding: 10px;
+      }
+
+      .logo span, .nav-item span {
+        display: none;
+      }
+
+      .main-content {
+        margin-left: 60px;
+        width: calc(100% - 60px);
+      }
+
+      .dashboard-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+  <nav class="sidebar">
+    <a href="#" class="logo">
+      <i class="fas fa-file-alt"></i>
+      <span>DocManager</span>
+    </a>
+    
+    <a href="dashboard.html" class="nav-item active">
+      <i class="fas fa-chart-pie"></i>
+      <span>Dashboard</span>
+    </a>
+    
+    <a href="assigned.html" class="nav-item">
+      <i class="fas fa-tasks"></i>
+      <span>Assigned Documents</span>
+    </a>
+    
+    <a href="categories.html" class="nav-item">
+      <i class="fas fa-folder"></i>
+      <span>Document Categories</span>
+    </a>
+    
+    <a href="add-document.html" class="nav-item">
+      <i class="fas fa-plus"></i>
+      <span>Add Document</span>
+    </a>
+  </nav>
+
+  <main class="main-content">
+    <div class="header">
+      <h1>Dashboard</h1>
+      <button class="signout-btn" onclick="signOut()">
+        <i class="fas fa-sign-out-alt"></i>
+        Sign Out
+      </button>
+    </div>
+
+    <div class="dashboard-grid">
+      <div class="chart-container">
+        <canvas id="documentChart"></canvas>
+      </div>
+      <div class="calendar-container">
+        <div id="calendar"></div>
+      </div>
+    </div>
+  </main>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+  let chart; // Global chart instance
+
+  function renderPieChart(labels, data) {
+    const ctx = document.getElementById('documentChart').getContext('2d');
+
+    if (chart) {
+      chart.destroy();
+    }
+
+    chart = new Chart(ctx, {
+      type: 'pie',
+      data: {
+        labels: labels,
+        datasets: [{
+          data: data,
+          backgroundColor: [
+            '#4CAF50',
+            '#2196F3',
+            '#FFC107',
+            '#9C27B0',
+            '#FF5722',
+            '#00BCD4',
+            '#E91E63'
+          ].slice(0, labels.length)
+        }]
+      },
+      options: {
+        responsive: true,
+        plugins: {
+          legend: {
+            position: 'bottom',
+            labels: { color: 'white' }
+          },
+          title: {
+            display: true,
+            text: 'Documents by Category',
+            color: 'white',
+            font: { size: 16 }
+          }
+        }
+      }
+    });
+  }
+
+  function loadDocumentDataAndRenderChart() {
+    const formDataList = JSON.parse(localStorage.getItem("formDataList")) || [];
+
+    // Count categories
+    const categoryCounts = {};
+    formDataList.forEach(doc => {
+      const category = doc.category || "Uncategorized";
+      categoryCounts[category] = (categoryCounts[category] || 0) + 1;
+    });
+
+    const labels = Object.keys(categoryCounts);
+    const data = Object.values(categoryCounts);
+
+    renderPieChart(labels, data);
+  }
+
+  loadDocumentDataAndRenderChart();
+
+  // Calendar: show uploaded dates
+  /*const uploadDates = (JSON.parse(localStorage.getItem('formDataList')) || [])
+    .map(doc => doc.date);
+
+  flatpickr("#calendar", {
+    inline: true,
+    enable: uploadDates,
+    dateFormat: "Y-m-d"
+  });*/
+
+ // Load form data from localStorage
+  const uploadDates = JSON.parse(localStorage.getItem('formDataList')) || [];
+
+  // Create a map: date string => number of uploads
+  const uploadsCountByDate = uploadDates.reduce((acc, doc) => {
+    acc[doc.date] = (acc[doc.date] || 0);
+    return acc;
+  }, {});
+
+  // Initialize flatpickr calendar with dots and tooltip
+  flatpickr("#calendar", {
+    inline: true,
+    dateFormat: "Y-m-d",
+    enable: Object.keys(uploadsCountByDate),
+
+    onDayCreate: function(dObj, dStr, fp, dayElem) {
+      const date = dayElem.dateObj.toISOString().slice(0, 10);
+
+      if (uploadsCountByDate[date]) {
+        // Tooltip with exact count
+        dayElem.title = `${uploadsCountByDate[date]} document${uploadsCountByDate[date] > 1 ? 's' : ''} uploaded`;
+
+        // Container for dots
+        const dotsContainer = document.createElement('div');
+        dotsContainer.style.marginTop = '3px';
+        dotsContainer.style.display = 'flex';
+        dotsContainer.style.justifyContent = 'center';
+        dotsContainer.style.gap = '4px';
+
+        // Max 3 dots max to keep UI clean
+        const dotsCount = Math.min(uploadsCountByDate[date], 3);
+
+        for (let i = 0; i < dotsCount; i++) {
+          const dot = document.createElement('span');
+          dot.style.width = '7px';
+          dot.style.height = '7px';
+          dot.style.borderRadius = '50%';
+          dot.style.backgroundColor = '#007bff'; // blue color
+          dot.style.display = 'inline-block';
+          dotsContainer.appendChild(dot);
+        }
+
+        dayElem.appendChild(dotsContainer);
+      }
+    }
+  });
+
+  // Sign out function with confirmation
+  function signOut() {
+    Swal.fire({
+      title: 'Sign Out',
+      text: 'Are you sure you want to sign out?',
+      icon: 'question',
+      showCancelButton: true,
+      confirmButtonColor: '#4CAF50',
+      cancelButtonColor: '#d33',
+      confirmButtonText: 'Yes, sign out',
+      background: 'rgba(255, 255, 255, 0.9)',
+    }).then((result) => {
+      if (result.isConfirmed) {
+        window.location.href = 'index.html';
+      }
+    });
+  }
+
+  // Get the uploaded document data from local storage
+const formDataList = JSON.parse(localStorage.getItem("formDataList")) || [];
+
+// Display the uploaded documents in the dashboard
+const dashboardContainer = document.getElementById("dashboard-container");
+formDataList.forEach((doc) => {
+  const docCard = document.createElement("div");
+  docCard.innerHTML = `
+    <h2>${doc.docName}</h2>
+    <p>Author: ${doc.author}</p>
+    <p>Date: ${doc.date}</p>
+    <p>Category: ${doc.category}</p>
+  `;
+  dashboardContainer.appendChild(docCard);
+});
+
+</script>
+</body>
+</html>

@@ -1,0 +1,8 @@
+{
+  "rewrites": [
+    { "source": "/", "destination": "/front.html" },
+    { "source": "/form", "destination": "/form.html" },
+    { "source": "/table", "destination": "/table.html" }
+  ],
+  "cleanUrls": true
+}
