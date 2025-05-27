@@ -1,8 +1,7 @@
 {
   "rewrites": [
-    { "source": "/", "destination": "/front.html" },
-    { "source": "/form", "destination": "/form.html" },
-    { "source": "/table", "destination": "/table.html" }
+    { "source": "/:path", "destination": "/:path.html" },
+    { "source": "/:path/", "destination": "/:path.html" }
   ],
   "cleanUrls": true
 }
