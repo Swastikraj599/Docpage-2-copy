@@ -150,24 +150,28 @@
       background: rgba(255, 255, 255, 0.95);
       border-radius: 8px;
       box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-      padding: 10px;
+      padding: 10px 0;
       display: none;
       z-index: 1000;
     }
 
-    .share-menu a {
+    .share-menu.active {
+      display: block;
+      animation: fadeIn 0.3s ease;
+    }
+
+    .share-option {
+      padding: 8px 20px;
       display: flex;
       align-items: center;
       gap: 10px;
-      padding: 8px 15px;
+      cursor: pointer;
       color: #333;
-      text-decoration: none;
       transition: background 0.3s;
-      border-radius: 4px;
     }
 
-    .share-menu a:hover {
-      background: #f0f0f0;
+    .share-option:hover {
+      background: rgba(0,0,0,0.1);
     }
 
     .preview-modal {
@@ -176,7 +180,7 @@
       left: 0;
       right: 0;
       bottom: 0;
-      background: rgba(0, 0, 0, 0.8);
+      background: rgba(0,0,0,0.8);
       display: flex;
       justify-content: center;
       align-items: center;
@@ -187,27 +191,27 @@
       background: white;
       padding: 20px;
       border-radius: 12px;
-      width: 90%;
-      max-width: 1200px;
-      height: 90vh;
-      position: relative;
+      max-width: 90%;
+      max-height: 90vh;
+      overflow: auto;
     }
 
     .preview-close {
       position: absolute;
-      top: 10px;
-      right: 10px;
-      background: none;
+      top: 20px;
+      right: 20px;
+      background: white;
       border: none;
-      font-size: 24px;
+      border-radius: 50%;
+      width: 40px;
+      height: 40px;
       cursor: pointer;
-      color: #333;
+      font-size: 20px;
     }
 
-    .preview-frame {
-      width: 100%;
-      height: calc(100% - 40px);
-      border: none;
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(-10px); }
+      to { opacity: 1; transform: translateY(0); }
     }
 
     @media (max-width: 768px) {
@@ -278,37 +282,11 @@
         <!-- Table content will be dynamically populated -->
       </tbody>
     </table>
-
-    <!-- Add share menu template -->
-    <div id="shareMenu" class="share-menu">
-      <a href="#" onclick="shareViaEmail(currentDocId)">
-        <i class="fas fa-envelope"></i> Email
-      </a>
-      <a href="#" onclick="shareViaWhatsApp(currentDocId)">
-        <i class="fab fa-whatsapp"></i> WhatsApp
-      </a>
-      <a href="#" onclick="copyShareLink(currentDocId)">
-        <i class="fas fa-link"></i> Copy Link
-      </a>
-    </div>
-
-    <!-- Preview modal -->
-    <div id="previewModal" class="preview-modal" style="display: none;">
-      <div class="preview-content">
-        <button class="preview-close" onclick="closePreview()">&times;</button>
-        <iframe id="previewFrame" class="preview-frame"></iframe>
-      </div>
-    </div>
   </main>
 
   <script>
-    let currentDocId = null;
-    const shareMenu = document.getElementById('shareMenu');
-
-    // Fetch data from localStorage
     const formDataList = JSON.parse(localStorage.getItem("formDataList")) || [];
-
-    // Render documents in the table
+    
     function renderDocuments() {
       const tbody = document.getElementById('documentsTableBody');
       tbody.innerHTML = formDataList.map(doc => `
@@ -337,45 +315,87 @@
 
     function previewDocument(id) {
       const doc = formDataList.find(d => d.id === id);
-      if (!doc || !doc.fileData) {
-        Swal.fire('Error', 'Document not found or preview unavailable', 'error');
+      if (!doc) {
+        Swal.fire('Error', 'Document not found', 'error');
         return;
       }
 
-      const previewModal = document.getElementById('previewModal');
-      const previewFrame = document.getElementById('previewFrame');
+      const modal = document.createElement('div');
+      modal.className = 'preview-modal';
       
-      previewFrame.src = doc.fileData;
-      previewModal.style.display = 'flex';
+      let content = '';
+      if (doc.fileData) {
+        if (doc.fileType.startsWith('image/')) {
+          content = `<img src="${doc.fileData}" style="max-width: 100%; max-height: 80vh;">`;
+        } else if (doc.fileType === 'application/pdf') {
+          content = `<embed src="${doc.fileData}" type="application/pdf" width="100%" height="80vh">`;
+        } else {
+          content = `<iframe src="${doc.fileData}" style="width: 100%; height: 80vh; border: none;"></iframe>`;
+        }
+      } else {
+        content = '<p>No preview available</p>';
+      }
+
+      modal.innerHTML = `
+        <button class="preview-close" onclick="this.parentElement.remove()">&times;</button>
+        <div class="preview-content">
+          ${content}
+        </div>
+      `;
+
+      document.body.appendChild(modal);
     }
 
-    function closePreview() {
-      document.getElementById('previewModal').style.display = 'none';
-    }
-
-    function showShareMenu(event, docId) {
+    function showShareMenu(event, id) {
       event.preventDefault();
-      currentDocId = docId;
+      const doc = formDataList.find(d => d.id === id);
       
-      const rect = event.target.closest('button').getBoundingClientRect();
-      shareMenu.style.display = 'block';
-      shareMenu.style.top = `${rect.bottom + 5}px`;
-      shareMenu.style.left = `${rect.left}px`;
+      // Remove any existing share menu
+      const existingMenu = document.querySelector('.share-menu');
+      if (existingMenu) existingMenu.remove();
+
+      const menu = document.createElement('div');
+      menu.className = 'share-menu';
+      menu.innerHTML = `
+        <div class="share-option" onclick="shareViaEmail(${id})">
+          <i class="fas fa-envelope"></i> Email
+        </div>
+        <div class="share-option" onclick="shareViaWhatsApp(${id})">
+          <i class="fab fa-whatsapp"></i> WhatsApp
+        </div>
+        <div class="share-option" onclick="copyShareLink(${id})">
+          <i class="fas fa-link"></i> Copy Link
+        </div>
+      `;
+
+      // Position menu near the click
+      menu.style.position = 'fixed';
+      menu.style.left = `${event.clientX}px`;
+      menu.style.top = `${event.clientY}px`;
+
+      document.body.appendChild(menu);
+      requestAnimationFrame(() => menu.classList.add('active'));
+
+      // Close menu when clicking outside
+      document.addEventListener('click', function closeMenu(e) {
+        if (!menu.contains(e.target) && e.target !== event.target) {
+          menu.remove();
+          document.removeEventListener('click', closeMenu);
+        }
+      });
     }
 
     function shareViaEmail(id) {
       const doc = formDataList.find(d => d.id === id);
       const subject = encodeURIComponent(`Shared Document: ${doc.docName}`);
-      const body = encodeURIComponent(`Check out this document: ${doc.docName}\n\nShared via DocManager`);
+      const body = encodeURIComponent(`Check out this document: ${doc.docName}\n\nDetails:\nCategory: ${doc.category}\nAuthor: ${doc.author}\nDate: ${doc.date}`);
       window.location.href = `mailto:?subject=${subject}&body=${body}`;
-      shareMenu.style.display = 'none';
     }
 
     function shareViaWhatsApp(id) {
       const doc = formDataList.find(d => d.id === id);
-      const text = encodeURIComponent(`Check out this document: ${doc.docName}\nShared via DocManager`);
+      const text = encodeURIComponent(`Check out this document: ${doc.docName}\nCategory: ${doc.category}\nAuthor: ${doc.author}`);
       window.open(`https://wa.me/?text=${text}`, '_blank');
-      shareMenu.style.display = 'none';
     }
 
     function copyShareLink(id) {
@@ -391,8 +411,6 @@
           showConfirmButton: false
         });
       });
-      
-      shareMenu.style.display = 'none';
     }
 
     function editDocument(id) {
@@ -517,13 +535,6 @@
         }
       });
     }
-
-    // Close share menu when clicking outside
-    document.addEventListener('click', (e) => {
-      if (!e.target.closest('.share-btn') && !e.target.closest('.share-menu')) {
-        shareMenu.style.display = 'none';
-      }
-    });
 
     // Initial table render
     renderDocuments();
